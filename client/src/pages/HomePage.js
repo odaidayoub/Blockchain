@@ -14,6 +14,7 @@ const Home = () => {
   const [transactions, setTransactions] = useState([])
   const [show, setShow] = useState(false)
   const [data, setData] = useState(false)
+  const [newTx, setNewTx] = useState('')
 
   //  Connect to the Metamask by my account
   const connectWallet = async () => {
@@ -43,7 +44,7 @@ const Home = () => {
     } catch (err) {
       console.error(err.message)
     }
-  })
+  }, [])
 
   //  Get Transactions from Smart Contract which I interact with
   const getTransactions = async () => {
@@ -62,7 +63,7 @@ const Home = () => {
     if (!transactions) {
       getTransactions()
     }
-  })
+  }, [transactions])
 
   //  Write on chain of Smart Contract which  I interact with
   const writeDataOnChain = async (data) => {
@@ -72,7 +73,9 @@ const Home = () => {
       const contract = new ethers.Contract(contractAddress, contractABI, signer)
       let tx = await contract.store(data)
       await tx.wait()
-      getUpdateTransaction()
+      if (tx) {
+        getTransactions()
+      }
     } catch (err) {
       console.error(err.message)
     }
@@ -96,7 +99,7 @@ const Home = () => {
           <Col md={4}>
             <h1>Storage</h1>
           </Col>
-          <Col className='text-right' md={{ span: 4, offset: 4 }}>
+          <Col md={{ span: 4, offset: 4 }}>
             {!walletAddress ? (
               <Button className='my-3' variant='danger' onClick={connectWallet}>
                 Connect Metamask
@@ -122,7 +125,7 @@ const Home = () => {
             </tr>
           </thead>
           <tbody>
-            {transactions.map((transaction, index) => (
+            {[...transactions].reverse().map((transaction, index) => (
               <tr key={index}>
                 <td>{transaction}</td>
               </tr>
