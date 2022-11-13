@@ -11,7 +11,10 @@ const Header = ({ address }) => {
           <Navbar.Brand>Smart Contract</Navbar.Brand>
           <Navbar.Collapse id='basic-navbar-nav'>
             <Nav className='ms-auto'>
-              <Navbar.Text>Wallet: {shortenAddress(address)}</Navbar.Text>
+              <Navbar.Text>
+                Wallet:{' '}
+                {address ? shortenAddress(address) : 'No wallet address'}
+              </Navbar.Text>
             </Nav>
           </Navbar.Collapse>
         </Container>

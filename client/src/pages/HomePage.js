@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ethers } from 'ethers'
 import Header from '../components/Header'
+import Transactions from '../components/Transactions'
+import PaginationTransactions from '../components/PaginationTransactions'
 import Container from 'react-bootstrap/Container'
 import Row from 'react-bootstrap/Row'
 import Form from 'react-bootstrap/Form'
 import Col from 'react-bootstrap/Col'
-import Table from 'react-bootstrap/Table'
 import Button from 'react-bootstrap/Button'
 import { contractAddress, contractABI } from '../constants/contractConstants'
 
@@ -14,7 +15,8 @@ const Home = () => {
   const [transactions, setTransactions] = useState([])
   const [show, setShow] = useState(false)
   const [data, setData] = useState(false)
-  const [newTx, setNewTx] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [transactionsPerPage] = useState(6)
 
   //  Connect to the Metamask by my account
   const connectWallet = async () => {
@@ -59,12 +61,6 @@ const Home = () => {
     }
   }
 
-  const getUpdateTransaction = useCallback(async () => {
-    if (!transactions) {
-      getTransactions()
-    }
-  }, [transactions])
-
   //  Write on chain of Smart Contract which  I interact with
   const writeDataOnChain = async (data) => {
     try {
@@ -88,8 +84,17 @@ const Home = () => {
 
   useEffect(() => {
     getCurrentWalletConnected()
-    getUpdateTransaction()
-  }, [getCurrentWalletConnected, getUpdateTransaction])
+  }, [getCurrentWalletConnected])
+
+  // Get current Transactions
+  const indexOfLastTransaction = currentPage * transactionsPerPage
+  const indexOfFirstTransaction = indexOfLastTransaction - transactionsPerPage
+  const currentTransactions = [...transactions]
+    .reverse()
+    .slice(indexOfFirstTransaction, indexOfLastTransaction)
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber)
 
   return (
     <>
@@ -118,20 +123,14 @@ const Home = () => {
         </Row>
       </Container>
       {transactions && (
-        <Table striped bordered hover responsive className='table-sm'>
-          <thead>
-            <tr>
-              <th>Data</th>
-            </tr>
-          </thead>
-          <tbody>
-            {[...transactions].reverse().map((transaction, index) => (
-              <tr key={index}>
-                <td>{transaction}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+        <>
+          <Transactions transactions={currentTransactions} />
+          <PaginationTransactions
+            transactionsPerPage={transactionsPerPage}
+            totalTransactions={transactions.length}
+            paginate={paginate}
+          />
+        </>
       )}
       {walletAddress && (
         <Button className='my-3' variant='info' onClick={() => setShow(true)}>
